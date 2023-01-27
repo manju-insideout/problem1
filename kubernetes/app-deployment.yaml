@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mediawiki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mediawiki
+  template:
+    metadata:
+      labels:
+        app: mediawiki
+    spec:
+      containers:
+      - name: mediawiki
+        image: mediawiki:latest
+        env:
+        - name: MEDIAWIKI_DB_HOST
+          value: mediawiki-db
+        - name: MEDIAWIKI_DB_NAME
+          value: mediawikidb
+        - name: MEDIAWIKI_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mediawiki-db-credentials
+              key: username
+        - name: MEDIAWIKI_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mediawiki-db-credentials
+              key: password
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
+      volumes:
+      - name: mediawiki-config
+        configMap:
+          name: mediawiki-config
